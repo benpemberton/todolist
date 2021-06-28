@@ -5,14 +5,13 @@ const newTask = (name, description, priority, dueDate) => {
     obj.description = description
     obj.priority = priority
     obj.dueDate = dueDate
-
-    console.log(obj);
+    obj.id = Date.now();
 
     return obj;
 }
 
 const proto = {
-    changeName() {
+    sayHello() {
 
     }
 }
