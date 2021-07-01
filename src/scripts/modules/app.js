@@ -22,15 +22,20 @@ const appendTaskForm = () => {
         placeholder="Task name...">
         <input type="text" id="new-task-desc" class="form-input"
         placeholder="Description...">
-        <label for="priority-choice">Priority</label>
+        <div id="pri-date-row">
+        <label for="priority-choice" id="priority-label">Priority:
+        </label>
         <select id="priority-choice" class="form-input">
             <option value="Low">Low</option>
             <option value="Med">Med</option>
             <option value="High">High</option>
         </select>
+        <label for="due-date" id="date-label">Due date:
+        </label>
         <input type="date" id="due-date" class="form-input">
-        <button type="button" id="submit-task">Add</button>
+        </div>
         <button type="button" id="cancel-task">Cancel</button>
+        <button type="button" id="submit-task">Add</button>
     </form>`
 
     const taskList = document.querySelector('.task-list');
@@ -74,10 +79,30 @@ const getFormInfo = () => {
 }
 
 const addTaskBtnHandler = () => {
-    addToTaskArray();
-    removeTaskForm();
-    toggleAddTaskBtn();
-    appendNewTask();
+    if (checkTaskForm()) {
+
+        addToTaskArray();
+        removeTaskForm();
+        toggleAddTaskBtn();
+        appendNewTask();
+    
+    }
+}
+
+const checkTaskForm = () => {
+    const elements = document.querySelectorAll('.form-input');
+
+    const status = []
+
+    elements.forEach(element => {
+        if (element.value === '') {
+            status.push(false);
+        }
+    });
+    
+    if (status.length === 0) {
+        return true;
+    }
 }
 
 const cancelTaskBtnHandler = () => {
@@ -106,13 +131,21 @@ const insertTaskName = () => {
     div.dataset.id = toDoList[toDoList.length-1]['id'];
 
     div.innerHTML = 
-    `<input type="radio" class="comp-status">
-    <span class="task-entry-title"></span>
+    `<div class="comp-status-div">
+    <input type="radio" class="comp-status">
+    </div>
+    <div class="task-details">
+    <div class="task-entry-title">
+    <span></span>
+    </div>
+    </div>
+    <div class="task-entry-icons">
     <i class="fas fa-plus"></i>
     <i class="far fa-edit"></i>
-    <i class="far fa-trash-alt"></i>`
+    <i class="far fa-trash-alt"></i>
+    </div>`
 
-    const span = div.querySelector('.task-entry-title');
+    const span = div.querySelector('span');
 
     span.textContent = toDoList[toDoList.length-1]['name'];
 
@@ -126,7 +159,6 @@ const insertTaskName = () => {
 }
 
 const insertTaskDate = () => {
-    console.log('hey');
     const div = document.createElement('div');    
     div.classList.add('date-entry');
 
@@ -155,7 +187,7 @@ const activateTaskIcons = () => {
 }
 
 const togglePlusIcon = (e) => {
-    const div = e.target.closest('div');
+    const div = e.target.closest('.task-entry');
 
     const icon = div.querySelector('i');
 
@@ -173,11 +205,6 @@ const togglePlusIcon = (e) => {
 
         minimiseTask();
     }
-
-    // icon.classList.contains('fa-plus')? expandTask(icon):
-    // minimiseTask(icon);
-
-    // console.log(e.target.closest('div'));
 }
 
 const expandTask = (div, icon) => {  
@@ -208,35 +235,45 @@ const getTaskFromArray = (div) => {
 
 const appendTaskDetails = (details, icon) => {
     const elements = 
-    `<input type="text" id="task-desc" readonly>
-    <label for="priority-choice">Priority</label>
-    <select id="priority-choice" disabled>
+    `<textarea type="text" class="task-desc" readonly></textarea>
+    <select class="priority-choice" disabled>
         <option value="Low">Low</option>
         <option value="Med">Med</option>
         <option value="High">High</option>
     </select>
-    <input type="date" id="due-date">
+    <input type="date" class="due-date" readonly>
     </input>`;
 
-    const parentDiv = icon.closest('div');
+    const parentDiv = icon.closest('.task-entry');
+
+    const taskNameDiv = parentDiv.querySelector('.task-details');
 
     const detailsDiv = document.createElement('div');
+    detailsDiv.classList.add('append-details');
 
     detailsDiv.innerHTML = elements;
 
-    const description = detailsDiv.querySelector('#task-desc');
+    const description = detailsDiv.querySelector('.task-desc');
     description.value = details.description;
 
-    const priority = detailsDiv.querySelector('#priority-choice');
+    const priority = detailsDiv.querySelector('.priority-choice');
     priority.value = details.priority;
 
-    const date = detailsDiv.querySelector('#due-date');
+    const date = detailsDiv.querySelector('.due-date');
     date.value = details.dueDate;
 
-    parentDiv.insertBefore(detailsDiv, icon);
+    taskNameDiv.appendChild(detailsDiv);
+
+    autoHeight('.task-desc');
 
 
         
+}
+
+const autoHeight = (element) => {
+    const el = document.querySelector(`${element}`);
+    
+    el.style.height = (el.scrollHeight) + 'px';
 }
 
 

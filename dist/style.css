@@ -81,7 +81,6 @@ span {
 .left-sidebar {
     flex:0 1 20%;
     min-width: 200px;
-    /* background-color: #EFC3E6; */
 }
 
 .task-view-menu, .project-view-menu {
@@ -106,17 +105,6 @@ span {
     padding: 0.5%;
 }
 
-.project-name {
-    background-color: #B8BEDD;
-    min-height: 50px;
-    display: flex;
-    align-items: center;
-}
-
-.project-name h2 {
-    margin: 0 2%;
-}
-
 .task-list {
     display: inline-block;
     width: 75%;
@@ -134,4 +122,132 @@ span {
 .date-list {
     display: inline-block;
     width: 25%;
+}
+
+/*  */
+/* input form */
+/*  */
+
+#form-container {
+    width: auto;
+}
+
+#task-form {
+    display: flex;
+    flex-wrap: wrap;
+    width: auto;
+    font-family: 'Noto Sans JP', Arial, sans-serif;
+}
+
+input, button {
+    font-family: 'Noto Sans JP', Arial, sans-serif;
+}
+
+#new-task-title, #new-task-desc {
+    flex: 0 1 100%;
+} 
+
+#new-task-title {
+    height: 30px;
+    margin: 1% 0;
+}
+
+#new-task-desc {
+    height: 30px;
+}
+
+#pri-date-row {
+    flex: 0 1 100%;
+    margin: 2% 0;
+}
+
+#priority-choice {
+    margin-left: 1%;
+    height: 30px;
+}
+
+#priority-label {
+    margin-left: 10%;
+}
+
+#date-label {
+    margin-left: 10%;
+}
+
+#due-date {
+    height: 30px;
+    margin-right: 15%;
+    margin-left: 1%
+}
+
+#task-form button {
+    margin-left: 10%;
+    width: 100px;
+    padding: 5px 0;
+}
+
+/*  */
+/* end of input form */
+/*  */
+
+.task-entry, .date-entry {
+    min-height: 30px;
+    background-color: #e3d5e2;
+    margin: 5px 0;
+    border-radius: 10px;
+    display: flex;
+}
+
+.date-entry span {
+    margin: 0 auto;
+}
+
+.comp-status-div {
+    width: 3%;
+    height: 30px;
+    display: flex;
+    align-items: center;
+}
+
+.task-details {
+    width: 80%;
+    margin-left: 1%;
+    background-color: #e3d5e2;
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.task-entry-title {
+    width: 100%;
+    height: 30px;
+    display: flex;
+    align-items: center;
+}
+
+.append-details {
+    width: 100%;
+}
+
+.task-desc {
+    width: 100%;
+    min-height: 30px;
+}
+
+textarea {
+    resize: none;
+    font-family: 'Noto Sans JP', Arial, sans-serif;
+    width: 100%;
+}
+
+.task-entry-icons {
+    height: 30px;
+    flex: 0 1 auto;
+    width: 17%;
+    display: flex;
+    align-items: center
+}
+
+.task-entry i {
+    margin: 0 auto;
 }
