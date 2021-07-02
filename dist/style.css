@@ -101,27 +101,29 @@ span {
     width: auto;
     height: auto;
     background-color: #F0E6EF;
-    display: flex;
     padding: 0.5%;
-}
-
-.task-list {
-    display: inline-block;
-    width: 75%;
-    margin-right: 5px;
+    display: grid;
+    grid-template-columns: 75% 25%;
+    gap: 7px 5px;
+    grid-auto-rows: min-content;
 }
 
 .task-list-title, .date-list-title {
     background-color: #9C89B8;
-    width: auto;
     padding: 10px;
     border-radius: 10px;
     color: white;
+    height: auto;
 }
 
-.date-list {
-    display: inline-block;
-    width: 25%;
+.date-list-title {
+    margin-right: 5px;
+}
+
+.add-task {
+    grid-column: 1/2;
+    height: 30px;
+    width: 80px;
 }
 
 /*  */
@@ -129,7 +131,7 @@ span {
 /*  */
 
 #form-container {
-    width: auto;
+    
 }
 
 #task-form {
@@ -191,10 +193,22 @@ input, button {
 /*  */
 
 .task-entry, .date-entry {
-    min-height: 30px;
     background-color: #e3d5e2;
-    margin: 5px 0;
     border-radius: 10px;
+}
+
+.task-entry {
+    min-height: 34px;
+    grid-column: 1/2;
+    display: grid;
+    grid-template-columns: 3% 80% 17%;
+    /* grid-auto-rows: min-content; */
+}
+
+.date-entry {
+    height: 34px;
+    grid-column: 2/3;
+    margin-right: 5px;
     display: flex;
 }
 
@@ -234,20 +248,45 @@ input, button {
     min-height: 30px;
 }
 
+.edit-details {
+    background-color: white;
+    transition: background-color 0.2s;
+}
+
+.edit-highlight {
+    background-color: rgba(65, 191, 63, 0.26);
+}
+
 textarea {
     resize: none;
     font-family: 'Noto Sans JP', Arial, sans-serif;
     width: 100%;
 }
 
+select:disabled, textarea:disabled, input:disabled {
+    opacity: 1;
+    color: black;
+    background-color: white;
+    border-color: rgb(133, 133, 133);
+}
+
 .task-entry-icons {
     height: 30px;
-    flex: 0 1 auto;
-    width: 17%;
+    grid-column: 3/4;
+    grid-row: 1/2;
     display: flex;
     align-items: center
 }
 
 .task-entry i {
     margin: 0 auto;
+}
+
+.save-btn {
+    width: 80px;
+    height: 30px;
+    grid-column: 3/4;
+    grid-row: 1/2;
+    margin: auto;
+    margin-bottom: 20%;
 }

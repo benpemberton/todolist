@@ -38,7 +38,7 @@ const appendTaskForm = () => {
         <button type="button" id="submit-task">Add</button>
     </form>`
 
-    const taskList = document.querySelector('.task-list');
+    const taskList = document.querySelector('.task-list-window');
 
     const btn = document.querySelector('.add-task');
 
@@ -68,8 +68,8 @@ const activateFormBtns = () => {
     cancel.addEventListener('click', cancelTaskBtnHandler);
 }
 
-const getFormInfo = () => {
-    const elements = document.querySelectorAll('.form-input');
+const getFormInfo = (selector) => {
+    const elements = document.querySelectorAll(selector);
 
     const values = [];
 
@@ -111,7 +111,7 @@ const cancelTaskBtnHandler = () => {
 }
 
 const addToTaskArray = () => {
-    const details = getFormInfo();
+    const details = getFormInfo('.form-input');
 
     const task = newTask(...details);
 
@@ -149,71 +149,176 @@ const insertTaskName = () => {
 
     span.textContent = toDoList[toDoList.length-1]['name'];
 
-    const taskList = document.querySelector('.task-list');
+    const taskList = document.querySelector('.task-list-window');
 
     const btn = document.querySelector('.add-task');
 
     taskList.insertBefore(div, btn);
 
-    activateTaskIcons();
+    activateTaskIcons(div);
 }
 
 const insertTaskDate = () => {
     const div = document.createElement('div');    
     div.classList.add('date-entry');
+    div.dataset.id = toDoList[toDoList.length-1]['id'];
 
     const span = document.createElement('span')
     span.textContent = toDoList[toDoList.length-1]['dueDate'];
 
     div.appendChild(span);
 
-    const datesList = document.querySelector('.date-list');
+    const taskList = document.querySelector('.task-list-window');
 
-    datesList.appendChild(div);
+    const btn = document.querySelector('.add-task');
+
+    taskList.insertBefore(div, btn);
 }
 
-const activateTaskIcons = () => {
-    const plus = document.querySelector('.fa-plus');
+const activateTaskIcons = (div) => {
+    const plus = div.querySelector('.fa-plus');
 
-    plus.addEventListener('click', togglePlusIcon);
+    plus.addEventListener('click', toggleIconsHandler);
 
-    const edit = document.querySelector('.fa-edit');
+    const edit = div.querySelector('.fa-edit');
 
-    // edit.addEventListener('click', editDetails);
+    edit.addEventListener('click', toggleIconsHandler);
 
     // const trash = document.querySelector('.fa-trash-alt');
 
     // trash.addEventListener('click', removeIconHandler);
 }
 
-const togglePlusIcon = (e) => {
+const toggleIconsHandler = (e) => {
     const div = e.target.closest('.task-entry');
 
-    const icon = div.querySelector('i');
+    const icon = e.target;
 
+    const details = getTaskFromArray(div);
+
+    if ((icon.classList.contains('fa-plus')) || 
+    (icon.classList.contains('fa-minus'))) {
+
+        togglePlusIcon(details, icon, div);
+
+    } else if (icon.classList.contains('fa-edit')) {
+
+        editDetails(div, details);
+
+    }
+}
+
+const togglePlusIcon = (details, icon, div) => {
     if (icon.classList.contains('fa-plus')) {
 
         icon.classList.remove('fa-plus');
         icon.classList.add('fa-minus');
 
-        expandTask(div, icon);
+        expandTask(details, icon);
 
     } else {
 
         icon.classList.remove('fa-minus');
         icon.classList.add('fa-plus');
 
-        minimiseTask();
+        minimiseTask(div);
     }
 }
 
-const expandTask = (div, icon) => {  
-    const details = getTaskFromArray(div);
+const editDetails = (div, details) => {
+    const icon = div.querySelector('.fa-plus');
 
+    if (!(div.querySelector('.append-details'))) {
+        togglePlusIcon(details, icon, div);
+    }   
+
+    toggleReadOnly(div);
+    toggleEditHighlight(div);
+    insertSaveBtn(div);
+
+}
+
+const toggleReadOnly = (div) => {
+    const inputs = div.querySelectorAll('.edit-details');
+
+    inputs.forEach(input => {
+        if (input.readOnly || input.disabled) {
+            input.readOnly = false;
+            input.disabled = false;
+        } else {
+            input.readOnly = true
+            input.disabled = true;
+        }
+    });
+}
+
+const toggleEditHighlight = (div) => {
+    const inputs = div.querySelectorAll('.edit-details');
+
+    inputs.forEach(input => {
+        if (input.classList.contains('edit-highlight')) {
+            input.classList.remove('edit-highlight');
+        } else {
+            input.classList.add('edit-highlight');
+
+        }
+    });
+}
+
+const insertSaveBtn = (div) => {
+    const btn = document.createElement('button');
+    btn.classList.add('save-btn');
+    btn.textContent = 'Save';
+
+    btn.addEventListener('click', saveBtnHandler);
+
+    div.appendChild(btn);
+
+    toggleEditIcon(div);
+}
+
+const toggleEditIcon = (div) => {
+    const icon = div.querySelector('.fa-edit');
+
+    if (icon.style.pointerEvents === 'none') {
+        icon.style.pointerEvents = 'auto';
+    } else {
+        icon.style.pointerEvents = 'none';
+    }
+}
+
+const removeSaveBtn = (div) => {
+    const saveBtn = div.querySelector('.save-btn');
+
+    if (saveBtn) {
+        saveBtn.remove();
+    }
+}
+
+const saveBtnHandler = (e) => {
+    const div = e.target.closest('.task-entry');
+
+    removeSaveBtn(div);
+    toggleEditIcon(div);
+
+
+}
+
+const expandTask = (details, icon) => {  
     appendTaskDetails(details, icon);
+}
 
+const minimiseTask = (div) => {
+    const detailsDiv = div.querySelector('.append-details');
 
+    detailsDiv.remove();
+    
+    const saveBtn = div.querySelector('.save-btn');
 
+    if (saveBtn) {
+        toggleEditIcon(div);
+        removeSaveBtn(div);
+    }
 }
 
 const getTaskFromArray = (div) => {
@@ -228,20 +333,20 @@ const getTaskFromArray = (div) => {
             }
         }
     });
-
-    console.log(task);
     return task;
 }
 
 const appendTaskDetails = (details, icon) => {
+    console.log(details);
+
     const elements = 
-    `<textarea type="text" class="task-desc" readonly></textarea>
-    <select class="priority-choice" disabled>
+    `<textarea type="text" class="task-desc edit-details" readonly></textarea>
+    <select class="priority-choice edit-details" disabled>
         <option value="Low">Low</option>
         <option value="Med">Med</option>
         <option value="High">High</option>
     </select>
-    <input type="date" class="due-date" readonly>
+    <input type="date" class="due-date edit-details" readonly>
     </input>`;
 
     const parentDiv = icon.closest('.task-entry');
@@ -265,9 +370,6 @@ const appendTaskDetails = (details, icon) => {
     taskNameDiv.appendChild(detailsDiv);
 
     autoHeight('.task-desc');
-
-
-        
 }
 
 const autoHeight = (element) => {
@@ -275,8 +377,5 @@ const autoHeight = (element) => {
     
     el.style.height = (el.scrollHeight) + 'px';
 }
-
-
-
 
 export { loadPage }
