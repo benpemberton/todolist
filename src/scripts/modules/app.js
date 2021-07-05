@@ -1,13 +1,65 @@
 import { newTask } from './task.js'
 import { toDoList } from './todolist.js'
+import { projects } from './projects.js'
 
 const loadPage = () => {
     activateTaskBtn();
+    activateSideBtns();
 }
 
 const activateTaskBtn = () => {
     const btn = document.querySelector('.add-task');
     btn.addEventListener('click', appendTaskForm);
+}
+
+const activateSideBtns = () => {
+    const btns = document.querySelectorAll('.side-btn');
+
+    btns.forEach(btn => {
+        btn.addEventListener('click', sideBtnHandler);
+    });
+}
+
+const sideBtnHandler = (e) => {
+    turnOffOtherBtns();
+
+    e.currentTarget.classList.add('side-btn-active');
+
+    clearProjectWindow();
+
+    if (e.currentTarget.closest('.task-view-menu')) {
+        console.log('yep');
+    } else {
+        showProjectTasks(e);
+    }
+}
+
+const showProjectTasks = (e) => {
+    const project = e.currentTarget.id.split('-')[1];
+
+
+}
+
+const populateTaskWindow = (array) => {
+
+}
+
+const clearProjectWindow = () => {
+    const tasks = document.querySelectorAll('.task-entry');
+
+    const dates = document.querySelectorAll('.date-entry');
+
+    tasks.forEach(task => task.remove());
+
+    dates.forEach(date => date.remove());
+}
+
+const turnOffOtherBtns = () => {
+    const btns = document.querySelectorAll('.side-btn');
+
+    btns.forEach(btn => {
+        btn.classList.remove('side-btn-active');
+    });
 }
 
 const appendTaskForm = () => {
@@ -68,8 +120,8 @@ const activateFormBtns = () => {
     cancel.addEventListener('click', cancelTaskBtnHandler);
 }
 
-const getFormInfo = (selector) => {
-    const elements = document.querySelectorAll(selector);
+const getFormInfo = (div, selector) => {
+    const elements = div.querySelectorAll(selector);
 
     const values = [];
 
@@ -80,12 +132,33 @@ const getFormInfo = (selector) => {
 
 const addTaskBtnHandler = () => {
     if (checkTaskForm()) {
+            const sideBtn = getCurrentBtn();
 
-        addToTaskArray();
-        removeTaskForm();
-        toggleAddTaskBtn();
-        appendNewTask();
-    
+        if (sideBtn.closest('.task-view-menu')) {
+            const array = toDoList;
+        
+            addToTaskArray(array);
+
+            const index = array.length-1;
+
+            appendNewTask(array, index);
+
+            console.log(array);
+            console.log(index);
+        } else {
+            const currentProj = sideBtn.id.split('-')[1];
+
+            const array = projects[currentProj];
+
+            addToTaskArray(array);
+
+            const index = array.length-1;
+            
+            appendNewTask(array, index);
+        } 
+
+    removeTaskForm();
+    toggleAddTaskBtn();
     }
 }
 
@@ -110,25 +183,33 @@ const cancelTaskBtnHandler = () => {
     toggleAddTaskBtn();
 }
 
-const addToTaskArray = () => {
-    const details = getFormInfo('.form-input');
+const addToTaskArray = (array) => {
+    const div = document.getElementById('task-form');
+
+    const details = getFormInfo(div, '.form-input');
 
     const task = newTask(...details);
-
-    toDoList.push(task);
+     
+    array.push(task);
 }
 
-const appendNewTask = () => {
-    insertTaskName();
-    insertTaskDate();
+const getCurrentBtn = () => {
+    const btn = document.querySelector('.side-btn-active');
+    return btn;
 }
 
-const insertTaskName = () => {
+const appendNewTask = (array, index) => {     
+    insertTaskName(array, index);    
+    insertTaskDate(array, index);
+}
+
+const insertTaskName = (array, index) => {
+    console.log(index);
     const div = document.createElement('div');
     
     div.classList.add('task-entry');
 
-    div.dataset.id = toDoList[toDoList.length-1]['id'];
+    div.dataset.id = array[index]['id'];
 
     div.innerHTML = 
     `<div class="comp-status-div">
@@ -136,7 +217,7 @@ const insertTaskName = () => {
     </div>
     <div class="task-details">
     <div class="task-entry-title">
-    <span></span>
+    <input class="edit-details" readonly></input>
     </div>
     </div>
     <div class="task-entry-icons">
@@ -145,9 +226,9 @@ const insertTaskName = () => {
     <i class="far fa-trash-alt"></i>
     </div>`
 
-    const span = div.querySelector('span');
+    const nameInput = div.querySelector('.edit-details');
 
-    span.textContent = toDoList[toDoList.length-1]['name'];
+    nameInput.value = array[index]['name'];
 
     const taskList = document.querySelector('.task-list-window');
 
@@ -158,13 +239,13 @@ const insertTaskName = () => {
     activateTaskIcons(div);
 }
 
-const insertTaskDate = () => {
+const insertTaskDate = (array, index) => {
     const div = document.createElement('div');    
     div.classList.add('date-entry');
-    div.dataset.id = toDoList[toDoList.length-1]['id'];
+    div.dataset.id = array[index]['id'];
 
     const span = document.createElement('span')
-    span.textContent = toDoList[toDoList.length-1]['dueDate'];
+    span.textContent = array[index]['dueDate'];
 
     div.appendChild(span);
 
@@ -300,8 +381,37 @@ const saveBtnHandler = (e) => {
 
     removeSaveBtn(div);
     toggleEditIcon(div);
+    saveTaskInArray(div, getFormInfo(div, '.edit-details'));
+    toggleReadOnly(div);
+    toggleEditHighlight(div);
+}
 
+const saveTaskInArray = (div, details) => {
+    const id = div.dataset.id;
 
+    const index = toDoList.findIndex(obj => {
+
+        for (const prop in obj) {
+            if (obj[prop] == id) {
+                return true;
+            }
+        }
+    });
+
+    const detailsObj = {
+        name: details[0],
+        description: details[1],
+        priority: details[2],
+        dueDate: details[3]
+    }
+
+    const task = toDoList[index];
+
+    for (const prop in detailsObj) {
+        task[prop] = detailsObj[prop]
+    }
+   
+    console.log(task);
 }
 
 const expandTask = (details, icon) => {  
@@ -312,11 +422,13 @@ const minimiseTask = (div) => {
     const detailsDiv = div.querySelector('.append-details');
 
     detailsDiv.remove();
-    
+
     const saveBtn = div.querySelector('.save-btn');
 
     if (saveBtn) {
         toggleEditIcon(div);
+        toggleReadOnly(div);
+        toggleEditHighlight(div);
         removeSaveBtn(div);
     }
 }

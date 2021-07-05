@@ -290,3 +290,8 @@ select:disabled, textarea:disabled, input:disabled {
     margin: auto;
     margin-bottom: 20%;
 }
+
+.side-btn-active {
+    background-color: #a66898;
+    color: white;
+}
