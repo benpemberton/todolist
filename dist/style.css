@@ -295,3 +295,20 @@ select:disabled, textarea:disabled, input:disabled {
     background-color: #a66898;
     color: white;
 }
+
+#project-form {
+    display: grid;
+    grid-template-columns: 40% 20% 40%;
+}
+
+#new-project-title {
+    grid-column: 1/4;
+}
+
+#cancel-project {
+    grid-column: 1/2;
+}
+
+#submit-project {
+    grid-column: 3/4;
+}
