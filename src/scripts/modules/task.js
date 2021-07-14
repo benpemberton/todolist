@@ -1,31 +1,22 @@
-import { array, getFormInfo } from './app.js';
+import { getFormInfo } from './app.js';
 import { projects } from './projects.js';
 import { toDoList } from './todolist.js';
 
 export default (function taskFunctions() {
 
     const newTask = (name, description, priority, dueDate, array) => {
-        const obj = Object.create(proto);
-
-        obj.name = name
-        obj.description = description
-        obj.priority = priority
-        obj.dueDate = dueDate
-        obj.id = Date.now();
-        obj.project = projects.getProjectName(array);
-
-        return obj;
-    }
-
-    const proto = {
-        sayHello() {
-
+        return {
+            name,
+            description,
+            priority,
+            dueDate,
+            id: Date.now(),
+            project: projects.getProjectName(array)
         }
+       
     }
 
     const addToTaskArray = (array) => {
-        const thing = toDoList;
-        console.log(thing);
         const div = document.getElementById('task-form');
     
         const details = getFormInfo(div, '.form-input');
@@ -33,13 +24,9 @@ export default (function taskFunctions() {
         const task = newTask(...details, array);
          
         array.push(task);
-
-        if (array !== toDoList) {
-            toDoList.push(task);
-        }
     }
 
-    const getTaskFromArray = (div) => {
+    const getTaskFromArray = (div, array) => {
         const id = div.dataset.id;
 
         const task = array.find(obj => {

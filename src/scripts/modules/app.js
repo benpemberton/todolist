@@ -2,7 +2,7 @@ import taskFunctions from './task.js'
 import { toDoList } from './todolist.js'
 import { projects } from './projects.js'
 
-let array = undefined;
+// let array = undefined;
 
 const loadPage = () => {
     activateTaskBtn();
@@ -59,6 +59,18 @@ const toggleAddTaskBtn = () => {
     = 'visible': btn.style.visibility = 'hidden';
 }
 
+const hideAddTaskBtn = () => {
+    const btn = document.querySelector('.add-task');
+    
+    btn.style.visibility = 'hidden';
+}
+
+const showAddTaskBtn = () => {
+    const btn = document.querySelector('.add-task');
+    
+    btn.style.visibility = 'visible';
+}
+
 const activateFormBtns = () => {
     const submit = document.getElementById('submit-task');
     submit.addEventListener('click', addTaskBtnHandler);
@@ -69,29 +81,21 @@ const activateFormBtns = () => {
 
 const addTaskBtnHandler = () => {
     if (checkTaskForm()) {
-            setCurrentArray();
+        const array = setCurrentArray();
 
-        if (array === toDoList) {        
-            taskFunctions.addToTaskArray(array);
+        const sideBtn = getCurrentBtn();
 
-            const index = array.length-1;
+        const currentProj = sideBtn.id.split('-')[1];
 
-            appendNewTask(array, index);
-        } else {
-            const sideBtn = getCurrentBtn();
+        taskFunctions.addToTaskArray(array, currentProj);
 
-            const currentProj = sideBtn.id.split('-')[1];
+        const index = array.length-1;
 
-            taskFunctions.addToTaskArray(array, currentProj);
-
-            const index = array.length-1;
-
-            appendNewTask(array, index);
-        } 
+        appendNewTask(array, index);
+    } 
 
     removeTaskForm();
     toggleAddTaskBtn();
-    }
 }
 
 const cancelTaskBtnHandler = () => {
@@ -138,19 +142,32 @@ const insertTaskName = (array, index) => {
     <input type="radio" class="comp-status">
     </div>
     <div class="task-details">
-    <div class="task-entry-title">
-    <input class="edit-details" readonly></input>
-    </div>
+        <div class="task-entry-title">
+        <input class="edit-details" readonly></input>
+        </div>
+        <div class="proj-tag">
+        <span class="proj-name"></input>
+        </div>
     </div>
     <div class="task-entry-icons">
-    <i class="fas fa-plus"></i>
-    <i class="far fa-edit"></i>
-    <i class="far fa-trash-alt"></i>
+        <i class="fas fa-plus"></i>
+        <i class="far fa-edit"></i>
+        <i class="far fa-trash-alt"></i>
     </div>`
 
     const nameInput = div.querySelector('.edit-details');
 
     nameInput.value = array[index]['name'];
+
+    const globArray = setCurrentArray();
+
+    if (globArray === toDoList) {
+        console.log('hey');
+
+        const projName = div.querySelector('.proj-name');
+
+        projName.textContent = `${array[index]['project']}`;
+    }
 
     const taskList = document.querySelector('.task-list-window');
 
@@ -197,7 +214,14 @@ const toggleIconsHandler = (e) => {
 
     const icon = e.target;
 
-    const details = taskFunctions.getTaskFromArray(div);
+    let array = setCurrentArray();
+
+    if (array === toDoList) {
+        const proj = div.querySelector('.proj-name').textContent;
+        array = projects[proj];
+    }
+
+    const details = taskFunctions.getTaskFromArray(div, array);
 
     if ((icon.classList.contains('fa-plus')) || 
     (icon.classList.contains('fa-minus'))) {
@@ -423,13 +447,19 @@ const sideBtnHandler = (e) => {
 
     clearTaskWindow();
 
-    setCurrentArray();
+    const array = setCurrentArray();
 
-    if (currentBtn.id === 'display-today') {
+    if (currentBtn.id === 'display-all') {
+        hideAddTaskBtn();
+        populateTaskWindow(toDoList.displayAll());
+    } else if (currentBtn.id === 'display-today') {
+        hideAddTaskBtn();
         console.log(currentBtn);
     } else if (currentBtn.id === 'display-week') {
+        hideAddTaskBtn();
         console.log(currentBtn);
     } else {
+        showAddTaskBtn();
         populateTaskWindow(array);
     }
 }
@@ -442,6 +472,12 @@ const clearTaskWindow = () => {
     tasks.forEach(task => task.remove());
 
     dates.forEach(date => date.remove());
+
+    const form = document.getElementById('form-container');
+
+    if (form) {
+        form.remove();
+    }
 }
 
 const populateTaskWindow = (array) => {
@@ -465,11 +501,11 @@ const getCurrentBtn = () => {
 
 const setCurrentArray = () => {
     if (getCurrentBtn().closest('.task-view-menu')) {
-        array = toDoList;
+        return toDoList;
     } else {
         const project = getCurrentBtn().id.split('-')[1];
 
-        array = projects[project];
+        return projects[project];
     }
 }
 
@@ -610,4 +646,4 @@ const descoreProjName = (name) => {
     return spacedName;
 }
 
-export { array, loadPage, getFormInfo }
+export { loadPage, getFormInfo }
