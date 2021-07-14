@@ -69,22 +69,20 @@ const activateFormBtns = () => {
 
 const addTaskBtnHandler = () => {
     if (checkTaskForm()) {
-            const sideBtn = getCurrentBtn();
+            setCurrentArray();
 
-        if (sideBtn.closest('.task-view-menu')) {
-            const array = toDoList;
-        
+        if (array === toDoList) {        
             taskFunctions.addToTaskArray(array);
 
             const index = array.length-1;
 
             appendNewTask(array, index);
         } else {
+            const sideBtn = getCurrentBtn();
+
             const currentProj = sideBtn.id.split('-')[1];
 
-            const array = projects[currentProj];
-
-            taskFunctions.addToTaskArray(array);
+            taskFunctions.addToTaskArray(array, currentProj);
 
             const index = array.length-1;
 
@@ -189,9 +187,9 @@ const activateTaskIcons = (div) => {
 
     edit.addEventListener('click', toggleIconsHandler);
 
-    // const trash = document.querySelector('.fa-trash-alt');
+    const trash = div.querySelector('.fa-trash-alt');
 
-    // trash.addEventListener('click', removeIconHandler);
+    trash.addEventListener('click', removeIconHandler);
 }
 
 const toggleIconsHandler = (e) => {
@@ -380,6 +378,30 @@ const toggleEditIcon = (div) => {
     }
 }
 
+const removeIconHandler = (e) => {
+    const div = e.target.closest('.task-entry');
+
+    const id = div.dataset.id;
+
+    removeTaskAndDate(id);
+
+    const task = taskFunctions.getTaskFromArray(div);
+
+    // console.log(task.project);
+
+    if (array === toDoList && task.project === undefined) {
+        taskFunctions.deleteFromArray(div, array);
+    }
+
+    taskFunctions.deleteFromArray(div, array);
+}
+
+const removeTaskAndDate = (id) => {
+    const divs = document.querySelectorAll(`[data-id="${id}"]`);
+
+    divs.forEach(div => div.remove());
+}
+
 const activateSideBtns = () => {
     const btns = document.querySelectorAll('.side-btn');
 
@@ -403,8 +425,10 @@ const sideBtnHandler = (e) => {
 
     setCurrentArray();
 
-    if (array === toDoList) {
-        console.log('yep');
+    if (currentBtn.id === 'display-today') {
+        console.log(currentBtn);
+    } else if (currentBtn.id === 'display-week') {
+        console.log(currentBtn);
     } else {
         populateTaskWindow(array);
     }
@@ -504,22 +528,24 @@ const removeProjectForm = () => {
 
 const submitProjectBtnHandler = () => {
     const projDiv = document.querySelector('.project-form-box');
-    
-    let projName = getFormInfo(projDiv, '.form-input');
 
-    projName = underscoreProjName(projName[0]);
+    if (projDiv.querySelector('.form-input').value !== '') {        
+        let projName = getFormInfo(projDiv, '.form-input');
 
-    projects.newProject(projName);
+        projName = underscoreProjName(projName[0]);
 
-    removeProjectForm();
+        projects.newProject(projName);
 
-    clearProjectBtns();
+        removeProjectForm();
 
-    populateProjectBtns();
+        clearProjectBtns();
 
-    sideBtnHandler(projName);
+        populateProjectBtns();
 
-    toggleAddProjectBtn();
+        sideBtnHandler(projName);
+
+        toggleAddProjectBtn();
+    }
 }
 
 const clearProjectBtns = () => {

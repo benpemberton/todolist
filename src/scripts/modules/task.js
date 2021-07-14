@@ -1,8 +1,10 @@
-import { array, getFormInfo } from './app.js'
+import { array, getFormInfo } from './app.js';
+import { projects } from './projects.js';
+import { toDoList } from './todolist.js';
 
 export default (function taskFunctions() {
 
-    const newTask = (name, description, priority, dueDate) => {
+    const newTask = (name, description, priority, dueDate, array) => {
         const obj = Object.create(proto);
 
         obj.name = name
@@ -10,6 +12,7 @@ export default (function taskFunctions() {
         obj.priority = priority
         obj.dueDate = dueDate
         obj.id = Date.now();
+        obj.project = projects.getProjectName(array);
 
         return obj;
     }
@@ -21,13 +24,19 @@ export default (function taskFunctions() {
     }
 
     const addToTaskArray = (array) => {
+        const thing = toDoList;
+        console.log(thing);
         const div = document.getElementById('task-form');
     
         const details = getFormInfo(div, '.form-input');
-    
-        const task = newTask(...details);
+        
+        const task = newTask(...details, array);
          
         array.push(task);
+
+        if (array !== toDoList) {
+            toDoList.push(task);
+        }
     }
 
     const getTaskFromArray = (div) => {
@@ -65,12 +74,27 @@ export default (function taskFunctions() {
         }
     
         const task = array[index];
-    
+        
         for (const prop in detailsObj) {
             task[prop] = detailsObj[prop];
         }
     }
 
+    const deleteFromArray = (div, array) => {
+        const id = div.dataset.id;
+    
+        const index = array.findIndex(obj => {
+    
+            for (const prop in obj) {
+                if (obj[prop] == id) {
+                    return true;
+                }
+            }
+        });
+
+        array.splice(index, 1);
+    }
+
     return { newTask, addToTaskArray, getTaskFromArray, 
-        saveTaskInArray }
+        saveTaskInArray, deleteFromArray }
 })();
