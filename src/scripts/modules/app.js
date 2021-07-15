@@ -1,8 +1,10 @@
 import taskFunctions from './task.js'
 import { toDoList } from './todolist.js'
 import { projects } from './projects.js'
+import { storage } from './storage.js'
 
-// let array = undefined;
+// window.localStorage.clear();
+// console.log(localStorage);
 
 const loadPage = () => {
     activateTaskBtn();
@@ -81,13 +83,17 @@ const activateFormBtns = () => {
 
 const addTaskBtnHandler = () => {
     if (checkTaskForm()) {
-        const array = setCurrentArray();
+        const div = document.getElementById('task-form');
+    
+        const details = getFormInfo(div, '.form-input');
 
-        const sideBtn = getCurrentBtn();
+        const array = setCurrentArray();   
+        
+        const task = taskFunctions.newTask(...details, array);
 
-        const currentProj = sideBtn.id.split('-')[1];
+        taskFunctions.addToTaskArray(task, array);
 
-        taskFunctions.addToTaskArray(array, currentProj);
+        storage.addTask(task);
 
         const index = array.length-1;
 
@@ -162,8 +168,6 @@ const insertTaskName = (array, index) => {
     const globArray = setCurrentArray();
 
     if (globArray === toDoList) {
-        console.log('hey');
-
         const projName = div.querySelector('.proj-name');
 
         projName.textContent = `${array[index]['project']}`;
@@ -214,6 +218,8 @@ const toggleIconsHandler = (e) => {
 
     const icon = e.target;
 
+    const id = div.dataset.id;
+
     let array = setCurrentArray();
 
     if (array === toDoList) {
@@ -221,7 +227,7 @@ const toggleIconsHandler = (e) => {
         array = projects[proj];
     }
 
-    const details = taskFunctions.getTaskFromArray(div, array);
+    const details = taskFunctions.getTaskFromArray(id, array);
 
     if ((icon.classList.contains('fa-plus')) || 
     (icon.classList.contains('fa-minus'))) {
@@ -366,10 +372,26 @@ const insertSaveBtn = (div) => {
 const saveBtnHandler = (e) => {
     const div = e.target.closest('.task-entry');
 
+    const projName = div.querySelector('.proj-name');
+
+    let array = setCurrentArray();
+
+    const globArray = setCurrentArray();
+
+    if (globArray === toDoList) {
+        array = projects[projName.textContent];
+    }
+
+    const details = getFormInfo(div, '.edit-details');
+
+    const id = div.dataset.id;
+
     removeSaveBtn(div);
     toggleEditIcon(div);
-    taskFunctions.saveTaskInArray(div, 
-        getFormInfo(div, '.edit-details'));
+
+    taskFunctions.saveTaskInArray(id, details, array);
+    storage.editTask(id, details, array);
+
     toggleReadOnly(div);
     toggleEditHighlight(div);
 }
@@ -409,7 +431,7 @@ const removeIconHandler = (e) => {
 
     removeTaskAndDate(id);
 
-    const task = taskFunctions.getTaskFromArray(div);
+    const task = taskFunctions.getTaskFromArray(id);
 
     // console.log(task.project);
 
@@ -454,10 +476,10 @@ const sideBtnHandler = (e) => {
         populateTaskWindow(toDoList.displayAll());
     } else if (currentBtn.id === 'display-today') {
         hideAddTaskBtn();
-        console.log(currentBtn);
+        populateTaskWindow(toDoList.displayToday());
     } else if (currentBtn.id === 'display-week') {
         hideAddTaskBtn();
-        console.log(currentBtn);
+        populateTaskWindow(toDoList.displayWeek());
     } else {
         showAddTaskBtn();
         populateTaskWindow(array);
@@ -646,4 +668,5 @@ const descoreProjName = (name) => {
     return spacedName;
 }
 
-export { loadPage, getFormInfo }
+export { loadPage, getFormInfo, addTaskBtnHandler, 
+    saveBtnHandler };

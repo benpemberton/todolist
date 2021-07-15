@@ -16,18 +16,11 @@ export default (function taskFunctions() {
        
     }
 
-    const addToTaskArray = (array) => {
-        const div = document.getElementById('task-form');
-    
-        const details = getFormInfo(div, '.form-input');
-        
-        const task = newTask(...details, array);
-         
+    const addToTaskArray = (task, array) => {
         array.push(task);
     }
 
-    const getTaskFromArray = (div, array) => {
-        const id = div.dataset.id;
+    const getTaskFromArray = (id, array) => {
 
         const task = array.find(obj => {
 
@@ -41,9 +34,7 @@ export default (function taskFunctions() {
         return task;
     }
 
-    const saveTaskInArray = (div, details) => {
-        const id = div.dataset.id;
-    
+    const saveTaskInArray = (id, details, array) => {   
         const index = array.findIndex(obj => {
     
             for (const prop in obj) {
