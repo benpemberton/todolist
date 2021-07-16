@@ -58,9 +58,7 @@ export default (function taskFunctions() {
         }
     }
 
-    const deleteFromArray = (div, array) => {
-        const id = div.dataset.id;
-    
+    const deleteFromArray = (id, array) => {    
         const index = array.findIndex(obj => {
     
             for (const prop in obj) {

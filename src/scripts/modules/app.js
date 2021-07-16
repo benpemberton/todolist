@@ -7,9 +7,32 @@ import { storage } from './storage.js'
 // console.log(localStorage);
 
 const loadPage = () => {
+    if (localStorage.length > 0) {
+        storage.retrieveTasks();
+        populateProjectBtns();
+    } else {
+        defaultStart();
+    }
+
     activateTaskBtn();
     activateSideBtns();
     activateAddProjectBtn();
+}
+
+const defaultStart = () => {
+    const genBtn = document.createElement('button');
+    genBtn.id = 'display-general';
+    genBtn.classList.add('side-btn');
+    genBtn.classList.add('side-btn-active');
+    genBtn.textContent = 'General';
+
+    const projectMenu = document.querySelector('.project-view-menu');
+
+    const addBtn = document.querySelector('.add-project');
+
+    projectMenu.insertBefore(genBtn, addBtn);
+
+    projects.general = [];
 }
 
 const activateTaskBtn = () => {
@@ -376,9 +399,7 @@ const saveBtnHandler = (e) => {
 
     let array = setCurrentArray();
 
-    const globArray = setCurrentArray();
-
-    if (globArray === toDoList) {
+    if (array === toDoList) {
         array = projects[projName.textContent];
     }
 
@@ -429,17 +450,19 @@ const removeIconHandler = (e) => {
 
     const id = div.dataset.id;
 
-    removeTaskAndDate(id);
+    const projName = div.querySelector('.proj-name');
 
-    const task = taskFunctions.getTaskFromArray(id);
+    let array = setCurrentArray();
 
-    // console.log(task.project);
-
-    if (array === toDoList && task.project === undefined) {
-        taskFunctions.deleteFromArray(div, array);
+    if (array === toDoList) {
+        array = projects[projName.textContent];
     }
 
-    taskFunctions.deleteFromArray(div, array);
+    removeTaskAndDate(id);
+
+    storage.deleteTask(id, array);
+
+    taskFunctions.deleteFromArray(id, array);
 }
 
 const removeTaskAndDate = (id) => {
@@ -453,36 +476,37 @@ const activateSideBtns = () => {
 
     btns.forEach(btn => {
         btn.addEventListener('click', 
-        sideBtnHandler);
+        sideBtnClicked);
     });
 }
 
-const sideBtnHandler = (e) => {
-    turnOffSideBtns();
-
-    let currentBtn;
-
-    e.currentTarget? currentBtn = e.currentTarget:
-    currentBtn = document.querySelector(`#proj-${e}`);
-
-    currentBtn.classList.add('side-btn-active');
-
-    clearTaskWindow();
-
-    const array = setCurrentArray();
-
-    if (currentBtn.id === 'display-all') {
-        hideAddTaskBtn();
-        populateTaskWindow(toDoList.displayAll());
-    } else if (currentBtn.id === 'display-today') {
-        hideAddTaskBtn();
-        populateTaskWindow(toDoList.displayToday());
-    } else if (currentBtn.id === 'display-week') {
-        hideAddTaskBtn();
-        populateTaskWindow(toDoList.displayWeek());
+const sideBtnClicked = (e) => {
+    if (e.target.nodeName == 'I') {
+        return;
     } else {
-        showAddTaskBtn();
-        populateTaskWindow(array);
+        turnOffSideBtns();
+
+        const currentBtn = e.currentTarget;
+
+        currentBtn.classList.add('side-btn-active');
+
+        clearTaskWindow();
+
+        const array = setCurrentArray();
+
+        if (currentBtn.id === 'display-all') {
+            hideAddTaskBtn();
+            populateTaskWindow(toDoList.displayAll());
+        } else if (currentBtn.id === 'display-today') {
+            hideAddTaskBtn();
+            populateTaskWindow(toDoList.displayToday());
+        } else if (currentBtn.id === 'display-week') {
+            hideAddTaskBtn();
+            populateTaskWindow(toDoList.displayWeek());
+        } else {
+            showAddTaskBtn();
+            populateTaskWindow(array);
+        }
     }
 }
 
@@ -600,7 +624,20 @@ const submitProjectBtnHandler = () => {
 
         populateProjectBtns();
 
-        sideBtnHandler(projName);
+        turnOffSideBtns();
+
+        const currentBtn = document.querySelector
+            (`#proj-${projName}`);
+    
+        currentBtn.classList.add('side-btn-active');
+    
+        clearTaskWindow();
+    
+        const array = setCurrentArray();
+
+        showAddTaskBtn();
+
+        populateTaskWindow(array);
 
         toggleAddProjectBtn();
     }
@@ -631,12 +668,59 @@ const populateProjectBtns = () => {
         nameUpper = nameUpper.charAt(0).toUpperCase() + 
         nameUpper.slice(1);
 
-        btn.textContent = `${nameUpper}`;
+        btn.innerHTML = 
+            `<span>${nameUpper}</span>
+            <div class="rem-icon-box">
+            <i class="fas fa-times" aria-hidden="true"></i>
+            </div>`;
 
-        btn.addEventListener('click', sideBtnHandler);
+        const icon = btn.querySelector('i');
+
+        icon.addEventListener('click', removeProjectHandler);
+
+        btn.addEventListener('click', sideBtnClicked);
 
         projDiv.insertBefore(btn, hiddenBtn);
     }
+}
+
+const removeProjectHandler = (e) => {
+    const btn = e.target.closest('.side-btn');
+
+    const project = btn.id.split('-')[1];
+
+    const index = projects.getProjIndex(project);
+
+    delete projects[project];
+
+    storage.deleteProject(project);
+
+    if (btn.classList.contains('side-btn-active')) {
+        const projNames = projects.getProjectNames();
+
+        let newProj = projNames[index];
+
+        if (index > projNames.length-1) {
+            newProj = projNames[index-1];
+        }
+
+        btn.remove();
+
+        const currentBtn = document.querySelector(`#proj-${newProj}`);
+        currentBtn.classList.add('side-btn-active');
+        
+        clearTaskWindow();
+    
+        const array = setCurrentArray();
+
+        showAddTaskBtn();
+
+        populateTaskWindow(array);
+    } else {
+        div.remove();
+
+        console.log('here');
+    }  
 }
 
 const underscoreProjName = (name) => {

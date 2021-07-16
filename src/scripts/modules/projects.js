@@ -1,5 +1,4 @@
 const projects = {
-    general: [],
 
     newProject(name) {
         this[name] = [];
@@ -22,6 +21,20 @@ const projects = {
             }
         }
         return names;
+    },
+
+    getProjIndex(project) {
+        const projNames = this.getProjectNames();
+    
+        if (projNames.length > 0) {
+            let index = projNames.findIndex(name => {
+                if (name === project) {
+                    return true;
+                }
+            });
+    
+            return index;
+        }
     }
 
 };
