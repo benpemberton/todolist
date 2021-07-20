@@ -4,11 +4,10 @@ import { toDoList } from './todolist.js';
 
 export default (function taskFunctions() {
 
-    const newTask = (name, description, priority, dueDate, array) => {
+    const newTask = (name, description, dueDate, array) => {
         return {
             name,
             description,
-            priority,
             dueDate,
             id: Date.now(),
             project: projects.getProjectName(array)
@@ -47,8 +46,7 @@ export default (function taskFunctions() {
         const detailsObj = {
             name: details[0],
             description: details[1],
-            priority: details[2],
-            dueDate: details[3]
+            dueDate: details[2]
         }
     
         const task = array[index];

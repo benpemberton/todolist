@@ -10,6 +10,10 @@ const loadPage = () => {
     if (localStorage.length > 0) {
         storage.retrieveTasks();
         populateProjectBtns();
+        setCurrentBtn();
+        const proj = getCurrentBtn();
+        const projName = proj.id.split('-')[1];
+        populateTaskWindow(projects[projName])
     } else {
         defaultStart();
     }
@@ -20,19 +24,10 @@ const loadPage = () => {
 }
 
 const defaultStart = () => {
-    const genBtn = document.createElement('button');
-    genBtn.id = 'display-general';
-    genBtn.classList.add('side-btn');
-    genBtn.classList.add('side-btn-active');
-    genBtn.textContent = 'General';
-
-    const projectMenu = document.querySelector('.project-view-menu');
-
-    const addBtn = document.querySelector('.add-project');
-
-    projectMenu.insertBefore(genBtn, addBtn);
-
     projects.general = [];
+
+    populateProjectBtns();
+    setCurrentBtn();
 }
 
 const activateTaskBtn = () => {
@@ -53,13 +48,6 @@ const appendTaskForm = () => {
         <input type="text" id="new-task-desc" class="form-input"
         placeholder="Description...">
         <div id="pri-date-row">
-        <label for="priority-choice" id="priority-label">Priority:
-        </label>
-        <select id="priority-choice" class="form-input">
-            <option value="Low">Low</option>
-            <option value="Med">Med</option>
-            <option value="High">High</option>
-        </select>
         <label for="due-date" id="date-label">Due date:
         </label>
         <input type="date" id="due-date" class="form-input">
@@ -105,8 +93,9 @@ const activateFormBtns = () => {
 }
 
 const addTaskBtnHandler = () => {
-    if (checkTaskForm()) {
-        const div = document.getElementById('task-form');
+    const div = document.getElementById('task-form');
+    
+    if (checkTaskForm(div)) {
     
         const details = getFormInfo(div, '.form-input');
 
@@ -121,10 +110,10 @@ const addTaskBtnHandler = () => {
         const index = array.length-1;
 
         appendNewTask(array, index);
-    } 
-
-    removeTaskForm();
-    toggleAddTaskBtn();
+    
+        removeTaskForm();
+        toggleAddTaskBtn();
+    }
 }
 
 const cancelTaskBtnHandler = () => {
@@ -132,8 +121,8 @@ const cancelTaskBtnHandler = () => {
     toggleAddTaskBtn();
 }
 
-const checkTaskForm = () => {
-    const elements = document.querySelectorAll('.form-input');
+const checkTaskForm = (div) => {
+    const elements = div.querySelectorAll('.form-input');
 
     const status = []
 
@@ -167,10 +156,7 @@ const insertTaskName = (array, index) => {
     div.dataset.id = array[index]['id'];
 
     div.innerHTML = 
-    `<div class="comp-status-div">
-    <input type="radio" class="comp-status">
-    </div>
-    <div class="task-details">
+    `<div class="task-details">
         <div class="task-entry-title">
         <input class="edit-details" readonly></input>
         </div>
@@ -210,10 +196,11 @@ const insertTaskDate = (array, index) => {
     div.classList.add('date-entry');
     div.dataset.id = array[index]['id'];
 
-    const span = document.createElement('span')
-    span.textContent = array[index]['dueDate'];
+    div.innerHTML = `<input type="date" class="due-date 
+        edit-details" readonly="">`;
 
-    div.appendChild(span);
+    const date = div.querySelector('.due-date');
+    date.value = array[index]['dueDate'];
 
     const taskList = document.querySelector('.task-list-window');
 
@@ -270,46 +257,38 @@ const togglePlusIcon = (details, icon, div) => {
         icon.classList.remove('fa-plus');
         icon.classList.add('fa-minus');
 
-        expandTask(details, icon);
+        appendTaskDetails(details, icon);
 
     } else {
 
         icon.classList.remove('fa-minus');
         icon.classList.add('fa-plus');
 
-        minimiseTask(div);
+        minimiseTask(div, details);
     }
 }
 
-const expandTask = (details, icon) => {  
-    appendTaskDetails(details, icon);
-}
-
-const minimiseTask = (div) => {
+const minimiseTask = (div, details) => {
     const detailsDiv = div.querySelector('.append-details');
 
     detailsDiv.remove();
+
+    const divs = document.querySelectorAll(`[data-id="${details.id}"]`);
 
     const saveBtn = div.querySelector('.save-btn');
 
     if (saveBtn) {
         toggleEditIcon(div);
-        toggleReadOnly(div);
-        toggleEditHighlight(div);
+        toggleReadOnly(divs);
+        toggleEditHighlight(divs);
         removeSaveBtn(div);
     }
 }
 
 const appendTaskDetails = (details, icon) => {
     const elements = 
-    `<textarea type="text" class="task-desc edit-details" readonly></textarea>
-    <select class="priority-choice edit-details" disabled>
-        <option value="Low">Low</option>
-        <option value="Med">Med</option>
-        <option value="High">High</option>
-    </select>
-    <input type="date" class="due-date edit-details" readonly>
-    </input>`;
+    `<textarea type="text" class="task-desc edit-details" 
+        readonly></textarea>`;
 
     const parentDiv = icon.closest('.task-entry');
 
@@ -322,12 +301,6 @@ const appendTaskDetails = (details, icon) => {
 
     const description = detailsDiv.querySelector('.task-desc');
     description.value = details.description;
-
-    const priority = detailsDiv.querySelector('.priority-choice');
-    priority.value = details.priority;
-
-    const date = detailsDiv.querySelector('.due-date');
-    date.value = details.dueDate;
 
     taskNameDiv.appendChild(detailsDiv);
 
@@ -347,36 +320,43 @@ const editDetails = (div, details) => {
         togglePlusIcon(details, icon, div);
     }   
 
-    toggleReadOnly(div);
-    toggleEditHighlight(div);
+    const divs = document.querySelectorAll(`[data-id="${details.id}"]`);
+
+    toggleReadOnly(divs);
+    toggleEditHighlight(divs);
     insertSaveBtn(div);
 
 }
 
-const toggleReadOnly = (div) => {
-    const inputs = div.querySelectorAll('.edit-details');
+const toggleReadOnly = (divs) => {
+    divs.forEach(div => {
+        console.log(div);
+        const inputs = div.querySelectorAll('.edit-details');
 
-    inputs.forEach(input => {
-        if (input.readOnly || input.disabled) {
-            input.readOnly = false;
-            input.disabled = false;
-        } else {
-            input.readOnly = true
-            input.disabled = true;
-        }
+        inputs.forEach(input => {
+            if (input.readOnly || input.disabled) {
+                input.readOnly = false;
+                input.disabled = false;
+            } else {
+                input.readOnly = true
+                input.disabled = true;
+            }
+        });
     });
 }
 
-const toggleEditHighlight = (div) => {
-    const inputs = div.querySelectorAll('.edit-details');
+const toggleEditHighlight = (divs) => {
+    divs.forEach(div => {
+        const inputs = div.querySelectorAll('.edit-details');
 
-    inputs.forEach(input => {
-        if (input.classList.contains('edit-highlight')) {
-            input.classList.remove('edit-highlight');
-        } else {
-            input.classList.add('edit-highlight');
+        inputs.forEach(input => {
+            if (input.classList.contains('edit-highlight')) {
+                input.classList.remove('edit-highlight');
+            } else {
+                input.classList.add('edit-highlight');
 
-        }
+            }
+        });
     });
 }
 
@@ -395,6 +375,10 @@ const insertSaveBtn = (div) => {
 const saveBtnHandler = (e) => {
     const div = e.target.closest('.task-entry');
 
+    const id = div.dataset.id;
+
+    const divs = document.querySelectorAll(`[data-id="${id}"]`);
+
     const projName = div.querySelector('.proj-name');
 
     let array = setCurrentArray();
@@ -403,9 +387,7 @@ const saveBtnHandler = (e) => {
         array = projects[projName.textContent];
     }
 
-    const details = getFormInfo(div, '.edit-details');
-
-    const id = div.dataset.id;
+    const details = getFormInfo(divs, '.edit-details');
 
     removeSaveBtn(div);
     toggleEditIcon(div);
@@ -413,8 +395,8 @@ const saveBtnHandler = (e) => {
     taskFunctions.saveTaskInArray(id, details, array);
     storage.editTask(id, details, array);
 
-    toggleReadOnly(div);
-    toggleEditHighlight(div);
+    toggleReadOnly(divs);
+    toggleEditHighlight(divs);
 }
 
 const removeSaveBtn = (div) => {
@@ -425,14 +407,27 @@ const removeSaveBtn = (div) => {
     }
 }
 
-const getFormInfo = (div, selector) => {
-    const elements = div.querySelectorAll(selector);
+const getFormInfo = (divs, selector) => {
+    if (NodeList.prototype.isPrototypeOf(divs)) {
+        const values = [];
+
+        divs.forEach(div => {
+            const elements = div.querySelectorAll(selector);
+
+            elements.forEach(element => values.push(element.value));
+        });
+        return values;
+
+    } else {
+    
+    const elements = divs.querySelectorAll(selector);
 
     const values = [];
 
     elements.forEach(element => values.push(element.value));
 
     return values;
+    }
 }
 
 const toggleEditIcon = (div) => {
@@ -538,6 +533,12 @@ const turnOffSideBtns = () => {
     btns.forEach(btn => {
         btn.classList.remove('side-btn-active');
     });
+}
+
+const setCurrentBtn = () => {
+    const projBtns = document.querySelectorAll('.proj-btn');
+    
+    projBtns[0].classList.add('side-btn-active');
 }
 
 const getCurrentBtn = () => {
@@ -662,6 +663,7 @@ const populateProjectBtns = () => {
         const btn = document.createElement('button');
         btn.id = `proj-${btnArray[i]}`;
         btn.classList.add('side-btn');
+        btn.classList.add('proj-btn');
 
         let nameUpper = descoreProjName(btnArray[[i]]);
 
@@ -679,6 +681,14 @@ const populateProjectBtns = () => {
         icon.addEventListener('click', removeProjectHandler);
 
         btn.addEventListener('click', sideBtnClicked);
+
+        btn.addEventListener('mouseover', () => {
+            icon.style.visibility = 'visible';
+        });
+
+        btn.addEventListener('mouseout', () => {
+            icon.style.visibility = 'hidden';
+        });
 
         projDiv.insertBefore(btn, hiddenBtn);
     }
@@ -706,20 +716,24 @@ const removeProjectHandler = (e) => {
 
         btn.remove();
 
-        const currentBtn = document.querySelector(`#proj-${newProj}`);
-        currentBtn.classList.add('side-btn-active');
-        
         clearTaskWindow();
-    
-        const array = setCurrentArray();
 
-        showAddTaskBtn();
+        const btnArray = projects.getProjectNames();
 
-        populateTaskWindow(array);
+        if (btnArray.length > 0) {
+            const currentBtn = document.querySelector(`#proj-${newProj}`);
+            currentBtn.classList.add('side-btn-active');
+        
+            const array = setCurrentArray();
+        
+            showAddTaskBtn();
+
+            populateTaskWindow(array);
+        } else {
+            hideAddTaskBtn();
+        }
     } else {
-        div.remove();
-
-        console.log('here');
+        btn.remove();
     }  
 }
 

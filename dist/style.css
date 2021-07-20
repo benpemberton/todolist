@@ -67,6 +67,12 @@ span {
     font-weight: 600;
 }
 
+body {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+}
+
 #header {
     display: flex;
     align-items: center;
@@ -76,6 +82,7 @@ span {
 
 #app-container {
     display: flex;
+    flex: 0 1 100%;
 }
 
 .left-sidebar {
@@ -96,10 +103,28 @@ span {
     border-radius: 10px;
 }
 
+.proj-btn {
+    display: grid;
+    grid-template-columns: 10% 80% 10%;
+}
+
+.proj-btn span {
+    grid-column: 2/3;
+}
+
+.rem-icon-box {
+    grid-column: 3/4;
+}
+
+.fa-times {
+    visibility: hidden;
+    color: black;
+}
+
 .task-list-window {
     flex: 0 1 80%;
     width: auto;
-    height: auto;
+    height: 100%;
     background-color: #F0E6EF;
     padding: 0.5%;
     display: grid;
@@ -199,17 +224,25 @@ input, button {
 
 .task-entry {
     min-height: 34px;
+    padding: 0.5% 0;
     grid-column: 1/2;
     display: grid;
-    grid-template-columns: 3% 80% 17%;
+    grid-template-columns: 80% 20%;
     /* grid-auto-rows: min-content; */
 }
 
 .date-entry {
-    height: 34px;
+    min-height: 34px;
+    padding: 0.5% 0;
     grid-column: 2/3;
     margin-right: 5px;
     display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.due-date.edit-details {
+    height: 25px;
 }
 
 .date-entry span {
@@ -225,18 +258,28 @@ input, button {
 
 .task-details {
     width: 80%;
-    margin-left: 1%;
+    margin-left: 3%;
     background-color: #e3d5e2;
     display: flex;
-    align-items: center;
     flex-wrap: wrap;
+    align-items: center;
 }
 
 .task-entry-title {
     width: 100%;
     height: 30px;
     display: flex;
+    flex: 1 0 60%;
     align-items: center;
+}
+
+.proj-tag {
+    display: inline-block;
+}
+
+.proj-name {
+    font-weight: 500;
+    font-size: 14px;
 }
 
 .append-details {
@@ -272,7 +315,7 @@ select:disabled, textarea:disabled, input:disabled {
 
 .task-entry-icons {
     height: 30px;
-    grid-column: 3/4;
+    grid-column: 2/3;
     grid-row: 1/2;
     display: flex;
     align-items: center
@@ -285,10 +328,10 @@ select:disabled, textarea:disabled, input:disabled {
 .save-btn {
     width: 80px;
     height: 30px;
-    grid-column: 3/4;
+    grid-column: 2/3;
     grid-row: 1/2;
     margin: auto;
-    margin-bottom: 20%;
+    margin-top: 25%;
 }
 
 .side-btn-active {
