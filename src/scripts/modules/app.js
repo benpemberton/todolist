@@ -3,8 +3,7 @@ import { toDoList } from './todolist.js'
 import { projects } from './projects.js'
 import { storage } from './storage.js'
 
-// window.localStorage.clear();
-// console.log(localStorage);
+console.log(localStorage);
 
 const loadPage = () => {
     if (localStorage.length > 0) {
@@ -330,7 +329,6 @@ const editDetails = (div, details) => {
 
 const toggleReadOnly = (divs) => {
     divs.forEach(div => {
-        console.log(div);
         const inputs = div.querySelectorAll('.edit-details');
 
         inputs.forEach(input => {
